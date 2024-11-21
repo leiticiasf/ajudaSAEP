@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
+import gato from "../assets/gifs.gif";
 
-function Card({ carro, buscarCarros }) {
+function Card({ livro, buscarLivros }) {
   const [isEditing, setIsEditing] = useState(false);
-  const [editedCar, setEditedCar] = useState({ ...carro });
+  const [editedLiv, setEditedLiv] = useState({ ...livro });
   const [isAluguelModalOpen, setIsAluguelModalOpen] = useState(false);
   const [aluguelData, setAluguelData] = useState({
     cpf_cliente: '',
@@ -10,99 +11,99 @@ function Card({ carro, buscarCarros }) {
     data_prevista_entrega: ''
   });
 
-  const alterarSituacao = async (novaSituacao) => {
-    if (novaSituacao === 'alugado') {
+  const alterarStatus = async (novoStatus) => {
+    if (novoStatus === 'emprestado') {
       setIsAluguelModalOpen(true);
     } else {
-      await atualizarCarro(novaSituacao);
+      await atualizarLivro(novoStatus);
     }
   };
 
-  const atualizarCarro = async (novaSituacao, dadosAluguel = null) => {
-    const body = { ...carro, situacao: novaSituacao };
+  const atualizarLivro = async (novaStatus, dadosAluguel = null) => {
+    const body = { ...livro, status: novaStatus };
     if (dadosAluguel) {
       body.cpf_cliente = dadosAluguel.cpf_cliente;
       body.data_retirada = dadosAluguel.data_retirada;
       body.data_prevista_entrega = dadosAluguel.data_prevista_entrega;
     }
-    await fetch(`http://localhost:3000/carros/${carro.id}`, {
+    await fetch(`http://localhost:3000/livros/${livro.id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body)
     });
-    buscarCarros();
+    buscarLivros();
   };
 
   const salvarAluguel = async () => {
-    await atualizarCarro('alugado', aluguelData);
+    await atualizarLivro('emprestado', aluguelData);
     setIsAluguelModalOpen(false);
     setAluguelData({ cpf_cliente: '', data_retirada: '', data_prevista_entrega: '' });
   };
 
-  const editarCarro = async () => {
-    await fetch(`http://localhost:3000/carros/${carro.id}`, {
+  const editarLivro = async () => {
+    await fetch(`http://localhost:3000/livros/${livro.id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(editedCar)
     });
-    buscarCarros();
+    buscarLivros();
     setIsEditing(false);
   };
 
-  const deletarCarro = async () => {
-    const confirmed = window.confirm("Tem certeza de que deseja deletar este carro?");
+  const deletarLivro = async () => {
+    const confirmed = window.confirm("Tem certeza de que deseja deletar este livro?");
     if (confirmed) {
-      await fetch(`http://localhost:3000/carros/${carro.id}`, { method: 'DELETE' });
-      buscarCarros();
+      await fetch(`http://localhost:3000/livros/${livro.id}`, { method: 'DELETE' });
+      buscarLivros();
     }
   };
 
   return (
     <div className="card">
-      <h3>{carro.modelo}</h3>
-      <p>Cor: {carro.cor}</p>
-      <p>KM: {carro.km}</p>
-      <p>Placa: {carro.placa}</p>
-      <p>Situação: {carro.situacao}</p>
-      {carro.situacao === 'uso' && (
+      <h3>{livro.modelo}</h3>
+      <p>Cor: {livro.cor}</p>
+      <p>KM: {livro.km}</p>
+      <p>Placa: {livro.placa}</p>
+      <p>Situação: {livro.status}</p>
+      {livro.status === 'uso' && (
         <>
-          <button onClick={() => alterarSituacao('alugado')}>Alugar</button>
-          <button onClick={() => alterarSituacao('manutencao')}>Manutenção</button>
+          <button onClick={() => alterarStatus('emprestado')}>Alugar</button>
+          <button onClick={() => alterarStatus('manutencao')}>Manutenção</button>
         </>
       )}
-      {carro.situacao === 'alugado' && (
-        <button onClick={() => alterarSituacao('uso')}>Devolver</button>
+      {livro.status === 'emprestado' && (
+        <button onClick={() => alterarStatus('uso')}>Devolver</button>
       )}
-      {carro.situacao === 'manutencao' && (
-        <button onClick={() => alterarSituacao('uso')}>Finalizar Manutenção</button>
+      {livro.status === 'manutencao' && (
+        <button onClick={() => alterarStatus('uso')}>Finalizar Manutenção</button>
       )}
       {isEditing && (
         <div>
           <input
-            value={editedCar.modelo}
-            onChange={(e) => setEditedCar({ ...editedCar, modelo: e.target.value })}
+            value={editedLiv.modelo}
+            onChange={(e) => setEditedLiv({ ...editedLiv, modelo: e.target.value })}
           />
           <input
-            value={editedCar.cor}
-            onChange={(e) => setEditedCar({ ...editedCar, cor: e.target.value })}
+            value={editedLiv.cor}
+            onChange={(e) => setEditedCar({ ...editedLiv, cor: e.target.value })}
           />
           <input
             type="number"
-            value={editedCar.km}
-            onChange={(e) => setEditedCar({ ...editedCar, km: parseInt(e.target.value) })}
+            value={editedLiv.km}
+            onChange={(e) => setEditedLiv({ ...editedLiv, km: parseInt(e.target.value) })}
           />
           <input
-            value={editedCar.placa}
-            onChange={(e) => setEditedCar({ ...editedCar, placa: e.target.value })}
+            value={editedLiv.placa}
+            onChange={(e) => setEditedLiv({ ...editedLiv, placa: e.target.value })}
           />
-          <button onClick={editarCarro}>Salvar</button>
+          <button onClick={livro}>Salvar</button>
           <button onClick={() => setIsEditing(false)}>Cancelar</button>
         </div>
       )}
       {!isEditing && (
         <>
           <button onClick={() => setIsEditing(true)}>Editar</button>
-          <button onClick={deletarCarro}>Deletar</button>
+          <button onClick={livro}>Deletar</button>
         </>
       )}
       {isAluguelModalOpen && (
@@ -127,9 +128,11 @@ function Card({ carro, buscarCarros }) {
             <button onClick={salvarAluguel}>Confirmar Aluguel</button>
             <button onClick={() => setIsAluguelModalOpen(false)}>Cancelar</button>
           </div>
+          
         </div>
       )}
     </div>
+    
   );
 }
 
